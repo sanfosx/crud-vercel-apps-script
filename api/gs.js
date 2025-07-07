@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-  const url = 'TU_URL_APP_SCRIPT'; // ← reemplazá con tu Web App Script
+  const url = 'https://script.google.com/macros/s/AKfycbxBNTH7SRBpdd8uSoHEqfO2wk7KFex93kyGTDJ81d6iues8F1_KVuLjqmuYI4SnpaQ/exec'; // ← reemplazá con tu Web App Script
 
   if (req.method === 'OPTIONS') {
     res.setHeader("Access-Control-Allow-Origin", "*");
