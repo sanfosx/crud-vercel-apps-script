@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>CRUD con Apps Script en Vercel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center p-6">
+  <div class="w-full max-w-xl bg-white rounded-lg shadow p-6">
+    <h1 class="text-2xl font-bold mb-4">Gestión de Usuarios</h1>
+
+    <div class="mb-6">
+      <input type="hidden" id="userId">
+      <input id="nombre" type="text" placeholder="Nombre" class="w-full px-4 py-2 mb-2 border rounded">
+      <input id="email" type="email" placeholder="Email" class="w-full px-4 py-2 mb-2 border rounded">
+      <div class="flex gap-2">
+        <button onclick="guardarUsuario()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Guardar</button>
+        <button onclick="cancelarEdicion()" class="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded hidden" id="cancelBtn">Cancelar</button>
+      </div>
+    </div>
+
+    <h2 class="text-xl font-semibold mb-2">Usuarios registrados</h2>
+    <div id="lista" class="space-y-2"></div>
+  </div>
+
+  <script>
+    const API_URL = '/api/gs';
+
+    function obtenerUsuarios() {
+      fetch(API_URL)
+        .then(res => res.json())
+        .then(data => {
+          const lista = document.getElementById("lista");
+          lista.innerHTML = '';
+          data.forEach(u => {
+            const card = document.createElement('div');
+            card.className = 'flex justify-between items-center bg-gray-50 border p-3 rounded';
+            card.innerHTML = `
+              <div><p class="font-medium">${u.nombre}</p><p class="text-sm text-gray-600">${u.email}</p></div>
+              <div class="flex gap-2">
+                <button onclick="editar(${u.id}, '${u.nombre}', '${u.email}')" class="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded">Editar</button>
+                <button onclick="eliminar(${u.id})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">Eliminar</button>
+              </div>`;
+            lista.appendChild(card);
+          });
+        });
+    }
+
+    function guardarUsuario() {
+      const id = document.getElementById("userId").value;
+      const action = id ? 'update' : 'create';
+      fetch(API_URL, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ action, id: Number(id), nombre: document.getElementById('nombre').value, email: document.getElementById('email').value })
+      }).then(() => {
+        cancelarEdicion();
+        obtenerUsuarios();
+      });
+    }
+
+    function eliminar(id) {
+      if (confirm('¿Eliminar usuario?')) {
+        fetch(API_URL, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ action: 'delete', id })
+        }).then(obtenerUsuarios);
+      }
+    }
+
+    function editar(id, nombre, email) {
+      document.getElementById("userId").value = id;
+      document.getElementById("nombre").value = nombre;
+      document.getElementById("email").value = email;
+      document.getElementById("cancelBtn").classList.remove("hidden");
+    }
+
+    function cancelarEdicion() {
+      document.getElementById("userId").value = '';
+      document.getElementById("nombre").value = '';
+      document.getElementById("email").value = '';
+      document.getElementById("cancelBtn").classList.add("hidden");
+    }
+
+    obtenerUsuarios();
+  </script>
+</body>
+</html>
